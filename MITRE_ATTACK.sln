@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp1", "TestApp1\TestApp1.csproj", "{5708A8BC-152E-46FB-96B2-1E8CB836B3A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MITREModels", "MITREModels\MITREModels.csproj", "{3C8C92EF-F2F1-4F11-810A-A31118DBB374}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MET", "MET\MET.csproj", "{50469293-0EA2-47AF-9217-B21C6D9B92B5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5708A8BC-152E-46FB-96B2-1E8CB836B3A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5708A8BC-152E-46FB-96B2-1E8CB836B3A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5708A8BC-152E-46FB-96B2-1E8CB836B3A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5708A8BC-152E-46FB-96B2-1E8CB836B3A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C8C92EF-F2F1-4F11-810A-A31118DBB374}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C8C92EF-F2F1-4F11-810A-A31118DBB374}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C8C92EF-F2F1-4F11-810A-A31118DBB374}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C8C92EF-F2F1-4F11-810A-A31118DBB374}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50469293-0EA2-47AF-9217-B21C6D9B92B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50469293-0EA2-47AF-9217-B21C6D9B92B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50469293-0EA2-47AF-9217-B21C6D9B92B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50469293-0EA2-47AF-9217-B21C6D9B92B5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
