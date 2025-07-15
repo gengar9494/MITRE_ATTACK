@@ -5,11 +5,11 @@ namespace MITREModels;
 public class Relationship
 {
     [JsonPropertyName("type")]
-    public string Type { get; set; }
+    public string? Type { get; set; }
     [JsonPropertyName("spec_version")]
-    public string SpecVersion { get; set; }
+    public string? SpecVersion { get; set; }
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
     [JsonPropertyName("created")]
     public DateTime Created { get; set; }
     [JsonPropertyName("created_by_ref")]
@@ -25,17 +25,17 @@ public class Relationship
     [JsonPropertyName("description")]
     public string? Description { get; set; }
     [JsonPropertyName("relationship_type")]
-    public string RelationshipType { get; set; }
+    public string? RelationshipType { get; set; }
     [JsonPropertyName("source_ref")]
-    public string SourceRef { get; set; }
+    public string? SourceRef { get; set; }
     [JsonPropertyName("target_ref")]
-    public string TargetRef { get; set; }
+    public string? TargetRef { get; set; }
     [JsonPropertyName("x_mitre_modified_by_ref")]
-    public string XMitreModifiedByRef { get; set; }
+    public string? XMitreModifiedByRef { get; set; }
     [JsonPropertyName("x_mitre_deprecated")]
     public bool XMitreDeprecated { get; set; }
     [JsonPropertyName("x_mitre_attack_spec_version")]
-    public string XMitreAttackSpecVersion { get; set; }
+    public string? XMitreAttackSpecVersion { get; set; }
     
     public string CourseOfActionExternalId { get; set; } = string.Empty;
     public string AttackPatternExternalId { get; set; } = string.Empty;
