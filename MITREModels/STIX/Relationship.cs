@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace MITREModels;
+namespace MITREModels.STIX;
 
 public class Relationship
 {
@@ -45,4 +45,11 @@ public class Relationship
     public string? GroupReferenceId { get; set; }
 
     public Dictionary<string, Sys> Systems { get; set; } = new Dictionary<string, Sys>();
+    
+    public string TechniqueId { get; set; }
+
+
+    public string MitigationId { get; set; }
+
+    public List<KillChainPhase> KillChainPhases { get; set; } = new List<KillChainPhase>();
 }

@@ -1,4 +1,4 @@
-namespace MITREModels;
+namespace MITREModels.STIX;
 
 public class Sys
 {

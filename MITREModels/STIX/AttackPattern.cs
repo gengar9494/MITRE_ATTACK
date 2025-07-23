@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace MITREModels;
+namespace MITREModels.STIX;
 
 public class AttackPattern
 {

@@ -1,4 +1,4 @@
-using MITREModels;
+using MITREModels.STIX;
 
 namespace MET.Models;
 
