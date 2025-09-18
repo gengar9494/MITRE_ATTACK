@@ -14,16 +14,16 @@ public class AtomicTest
     public string Description { get; set; }
 
     [YamlMember(Alias = "supported_platforms")]
-    public List<string> SupportedPlatforms { get; set; }
+    public List<string> SupportedPlatforms { get; set; } = new List<string>();
 
     [YamlMember(Alias = "input_arguments")]
-    public Dictionary<string, InputArgument> InputArguments { get; set; }
+    public Dictionary<string, InputArgument> InputArguments { get; set; } = new Dictionary<string, InputArgument>();
 
     [YamlMember(Alias = "dependency_executor_name")]
     public string DependencyExecutorName { get; set; }
 
     [YamlMember(Alias = "dependencies")]
-    public List<Dependency> Dependencies { get; set; }
+    public List<Dependency> Dependencies { get; set; } = new List<Dependency>();
 
     [YamlMember(Alias = "executor")]
     public Executor Executor { get; set; }

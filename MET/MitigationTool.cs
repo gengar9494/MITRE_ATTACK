@@ -1,4 +1,7 @@
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using MET.Models;
 using MITREModels.LAYER;
 using MITREModels.STIX;
@@ -27,21 +30,33 @@ public class MitigationTool
         var stixFile = SelectJsonFile("Select STIX JSON File");
         var excelFileName = $"MITRE Mitigations {DateTime.Now:yyyyMMdd-HHmmss}.xlsx";
         var excelFile = new FileInfo(Path.Combine(Program.AppDataPath, excelFileName));
+        var updateTypes = AnsiConsole.Prompt(
+            new TextPrompt<bool>("Update MITRE Mitigation Types?")
+                .AddChoice(true)
+                .AddChoice(false)
+                .DefaultValue(false)
+                .WithConverter(choice => choice ? "y" : "n"));
         
         ReadStixFile(stixFile);
-        CreateMitreMitigationFile(excelFile);
+        CreateMitreMitigationFile(excelFile, updateTypes);
     }
     
     public void UpdateMitreMitigationFile()
     {
         var oldExcelFile = SelectExcelFile("Select Mitigation Excel File");
         var stixFile = SelectJsonFile("Select STIX JSON File");
+        var updateTypes = AnsiConsole.Prompt(
+            new TextPrompt<bool>("Update MITRE Mitigation Types?")
+                .AddChoice(true)
+                .AddChoice(false)
+                .DefaultValue(false)
+                .WithConverter(choice => choice ? "y" : "n"));
         var newExcelFileName = string.Format("MITRE Mitigations {0:yyyyMMdd-HHmmss}.xlsx", DateTime.Now);
         var newExcelFile = new FileInfo(Path.Combine(Program.AppDataPath, newExcelFileName));
         
         ReadStixFile(stixFile);
         ReadMitigations(oldExcelFile, true);
-        CreateMitreMitigationFile(newExcelFile);
+        CreateMitreMitigationFile(newExcelFile, updateTypes);
     }
     
     public async Task DownloadAllMitreFiles()
@@ -373,19 +388,26 @@ public class MitigationTool
         p9.Systems.Add("PRE");
         
         Platforms.Add(p9);
+        
+        // var p10 = new Platform();
+        // p10.Name = "Central";
+        // p10.Relationships = Relationships.Where(x => x.XMitrePlatforms.Count > 1).ToList();
+        // p10.Systems.Add("Central");
+        //
+        // Platforms.Add(p10);
     }
     
-    private void CreateMitreMitigationFile(FileInfo excelFile)
+    private void CreateMitreMitigationFile(FileInfo excelFile, bool updateTypes)
     {
         using (var package = new ExcelPackage())
         {
             foreach (var platform in Platforms)
-                CreatePlatform(package, platform);
+                CreatePlatform(package, platform, updateTypes);
 
             var ws = package.Workbook.Worksheets.Add("CONFIG");
             
             ws.Cells[1, 1].Value = "Document Version";
-            ws.Cells[1, 2].Value = "1.0";
+            ws.Cells[1, 2].Value = "1.1";
             
             ws.Cells[2, 1].Value = "STIX Version";
             ws.Cells[2, 2].Value = StixVersion.ToString();
@@ -394,7 +416,7 @@ public class MitigationTool
         }
     }
 
-    private void CreatePlatform(ExcelPackage package, Platform platform)
+    private void CreatePlatform(ExcelPackage package, Platform platform, bool updateTypes)
     {
         GenerateGroupGuids(platform.Relationships);
 
@@ -439,7 +461,7 @@ public class MitigationTool
 
         var colAlphaRelationshipStixId = 
             NumberToLetter(columns["Relationship STIX ID"].ColIndex);
-        
+
         foreach (var item in platform.Relationships
                      .OrderBy(x => x.CourseOfActionExternalId)
                      .ThenBy(x => x.AttackPatternExternalId))
@@ -448,12 +470,12 @@ public class MitigationTool
                 continue;
             if (item.TargetRef == null)
                 continue;
-            
+
             var coa = CourseOfActions[item.SourceRef];
             var ap = AttackPatterns[item.TargetRef];
 
             colIndex = 1;
-            
+
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = rowIndex;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = item.Id;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = coa.Id;
@@ -461,9 +483,21 @@ public class MitigationTool
                 coa.ExternalReferences.Single(x => x.SourceName == "mitre-attack").ExternalId;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = coa.Name;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = ap.Id;
-            ws.Cells[rowIndex + rowOffset, colIndex++].Value = 
+            ws.Cells[rowIndex + rowOffset, colIndex++].Value =
                 ap.ExternalReferences.Single(x => x.SourceName == "mitre-attack").ExternalId;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = item.Description;
+
+
+            if (updateTypes)
+            {
+                ws.Cells[rowIndex + rowOffset, colIndex++].Value = GetMitigationType(item.Description!);
+            }
+            else
+            {
+                ws.Cells[rowIndex + rowOffset, colIndex++].Value = "";
+            }
+
+
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = "YES";
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = DateTime.UtcNow;
             
@@ -533,18 +567,19 @@ public class MitigationTool
         columns.Add("Technique STIX ID", new Column() {ColumnName = "Technique STIX ID", ColumnWidth = 55, WrapText = false, Hidden = true,  ColIndex = 6});
         columns.Add("Technique ID", new Column() {ColumnName = "Technique ID", ColumnWidth = 15, WrapText = false, ColIndex = 7});
         columns.Add("Description", new Column() {ColumnName = "Description", ColumnWidth = 50, WrapText = true,  Hidden = false, ColIndex = 8});
-        columns.Add("Latest", new Column() {ColumnName = "Latest", ColumnWidth = 11, WrapText = false, ColIndex = 9});
-        columns.Add("Added At", new Column() {ColumnName = "Added At", ColumnWidth = 15, WrapText = false, Hidden = true, NumberFormat = "yyyy-mm-dd", ColIndex = 10});
-        columns.Add("Mitigation Created At", new Column() {ColumnName = "Mitigation Created At", ColumnWidth = 15, WrapText = false, Hidden = true, NumberFormat = "yyyy-mm-dd",  ColIndex = 11});
-        columns.Add("Mitigation Modified At", new Column() {ColumnName = "Mitigation Modified At", ColumnWidth = 15, WrapText = false, Hidden = true, NumberFormat = "yyyy-mm-dd",  ColIndex = 12});
-        columns.Add("Relationship Created At", new Column() {ColumnName = "Relationship Created At", ColumnWidth = 15, WrapText = false, NumberFormat = "yyyy-mm-dd",  ColIndex = 13});
-        columns.Add("Relationship Modified At", new Column() {ColumnName = "Relationship Modified At", ColumnWidth = 15, WrapText = false, NumberFormat = "yyyy-mm-dd",  ColIndex = 14});
-        columns.Add("Technique Created At", new Column() {ColumnName = "Technique Created At", ColumnWidth = 15, WrapText = false, Hidden = true, NumberFormat = "yyyy-mm-dd",  ColIndex = 15});
-        columns.Add("Technique Modified At", new Column() {ColumnName = "Technique Modified At", ColumnWidth = 15, WrapText = false, Hidden = true, NumberFormat = "yyyy-mm-dd",  ColIndex = 16});
-        columns.Add("Status", new Column() {ColumnName = "Status", ColumnWidth = 11, WrapText = false, ColIndex = 17});
-        columns.Add("Group Guid", new Column() {ColumnName = "Group Guid", ColumnWidth = 35, WrapText = false, Hidden = true, ColIndex = 18});
-        columns.Add("Group Reference", new Column() {ColumnName = "Group Reference", ColumnWidth = 11, WrapText = false, Hidden = true, ColIndex = 19});
-        columns.Add("Group Reference ID", new Column() {ColumnName = "Group Reference ID", ColumnWidth = 55, WrapText = false, Hidden = true, ColIndex = 20});
+        columns.Add("Type", new Column() {ColumnName = "Type", ColumnWidth = 11, WrapText = false, ColIndex = 9});
+        columns.Add("Latest", new Column() {ColumnName = "Latest", ColumnWidth = 11, WrapText = false, ColIndex = 10});
+        columns.Add("Added At", new Column() {ColumnName = "Added At", ColumnWidth = 15, WrapText = false, Hidden = true, NumberFormat = "yyyy-mm-dd", ColIndex = 11});
+        columns.Add("Mitigation Created At", new Column() {ColumnName = "Mitigation Created At", ColumnWidth = 15, WrapText = false, Hidden = true, NumberFormat = "yyyy-mm-dd",  ColIndex = 12});
+        columns.Add("Mitigation Modified At", new Column() {ColumnName = "Mitigation Modified At", ColumnWidth = 15, WrapText = false, Hidden = true, NumberFormat = "yyyy-mm-dd",  ColIndex = 13});
+        columns.Add("Relationship Created At", new Column() {ColumnName = "Relationship Created At", ColumnWidth = 15, WrapText = false, NumberFormat = "yyyy-mm-dd",  ColIndex = 14});
+        columns.Add("Relationship Modified At", new Column() {ColumnName = "Relationship Modified At", ColumnWidth = 15, WrapText = false, NumberFormat = "yyyy-mm-dd",  ColIndex = 15});
+        columns.Add("Technique Created At", new Column() {ColumnName = "Technique Created At", ColumnWidth = 15, WrapText = false, Hidden = true, NumberFormat = "yyyy-mm-dd",  ColIndex = 16});
+        columns.Add("Technique Modified At", new Column() {ColumnName = "Technique Modified At", ColumnWidth = 15, WrapText = false, Hidden = true, NumberFormat = "yyyy-mm-dd",  ColIndex = 17});
+        columns.Add("Status", new Column() {ColumnName = "Status", ColumnWidth = 11, WrapText = false, ColIndex = 18});
+        columns.Add("Group Guid", new Column() {ColumnName = "Group Guid", ColumnWidth = 35, WrapText = false, Hidden = true, ColIndex = 19});
+        columns.Add("Group Reference", new Column() {ColumnName = "Group Reference", ColumnWidth = 11, WrapText = false, Hidden = true, ColIndex = 20});
+        columns.Add("Group Reference ID", new Column() {ColumnName = "Group Reference ID", ColumnWidth = 55, WrapText = false, Hidden = true, ColIndex = 21});
         
         var colIndex = columns.Last().Value.ColIndex;
         
@@ -715,5 +750,60 @@ public class MitigationTool
             throw new ArgumentOutOfRangeException(nameof(number), "Number must be between 1 and 26.");
 
         return ((char)(number + 64)).ToString();
+    }
+
+    private string GetMitigationType(string description)
+    {
+        var models = new List<string>() { "llama3.2", "gemma3:4b" };
+        var question1 =
+            "Categorize the following MITRE mitigation tasks as either Organizational or Technical." +
+            "Organizational mitigations are measures that involve human processes, policy creation, training, " +
+            "security governance, compliance standards, administrative controls, or high-level planning. " +
+            "These typically include actions like developing cybersecurity policies, conducting awareness training, " +
+            "defining roles and responsibilities, or managing risk at the business level. " +
+            "Technical mitigations involve the direct application of technology or system configurations. " +
+            "These include deploying software or hardware solutions, enforcing access controls, " +
+            "modifying system settings, coding security features, or implementing automated detection/prevention mechanisms.. " +
+            "Mitigation Task: ";
+        var question2 =
+            "Make absolutely sure to respond with only one word: Organizational or Technical and exclude all explanations";
+
+        var question = question1 + description + question2;
+        var result = PromptAsync(question, models.First()).Result;
+        
+        return result;
+    }
+
+    private async Task<string> PromptAsync(string question, string model)
+    {
+        var httpClient = new HttpClient();
+        var uri = new Uri("http://127.0.0.1:11434/api/generate");
+
+        var requestBody = new
+        {
+            model = model,
+            prompt = question,
+            stream = false
+        };
+        
+        var jsonString = JsonSerializer.Serialize(requestBody);
+        
+        var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+
+        try
+        {
+            var response = await httpClient.PostAsync(uri, jsonContent);
+            response.EnsureSuccessStatusCode();
+            
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<JsonElement>(responseContent);
+            var responseText = obj.GetProperty("response").GetString()!;
+            var result = Regex.Replace(responseText, @"<think>[\s\S]*?</think>\s*", string.Empty).Trim();
+            return responseText;
+        }
+        catch (Exception exception)
+        {
+            return exception.Message;
+        }
     }
 }

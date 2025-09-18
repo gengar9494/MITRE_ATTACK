@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MITREModels", "MITREModels\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MET", "MET\MET.csproj", "{50469293-0EA2-47AF-9217-B21C6D9B92B5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp2", "TestApp2\TestApp2.csproj", "{4385A3F3-A87A-4687-BBB9-051377F8E7AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{50469293-0EA2-47AF-9217-B21C6D9B92B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50469293-0EA2-47AF-9217-B21C6D9B92B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50469293-0EA2-47AF-9217-B21C6D9B92B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4385A3F3-A87A-4687-BBB9-051377F8E7AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4385A3F3-A87A-4687-BBB9-051377F8E7AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4385A3F3-A87A-4687-BBB9-051377F8E7AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4385A3F3-A87A-4687-BBB9-051377F8E7AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -11,7 +11,7 @@ public class MitreJsonFile
     public string Type { get; set; } = string.Empty;
 
     [JsonPropertyName("download_url")]
-    public Uri DownloadUrl { get; set; } = new Uri(@"");
+    public Uri DownloadUrl { get; set; }
     
     [JsonPropertyName("size")]
     public int? Size { get; set; }

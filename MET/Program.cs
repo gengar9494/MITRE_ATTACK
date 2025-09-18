@@ -7,7 +7,8 @@ namespace MET;
 class Program
 {
     public static string AppDataPath { get; set; } = string.Empty;
-
+    public static string PayloadsPath { get; set; } = string.Empty;
+    public static string AtomicsPath { get; set; } = string.Empty;
     private static MitigationTool MitigationTool { get; } = new MitigationTool();
     private static AtomicTestTool AtomicTestTool { get; } = new AtomicTestTool();
     
@@ -30,11 +31,11 @@ class Program
                             "00. Download last 5 MITRE Enterprise STIX JSONs",
                             "01. Create MITRE Mitigation Excel File",
                             "02. Update MITRE Mitigation Excel File",
-                            "03. Create MITRE ATT&CK Navigator Layers",
+                            "03. Create MITRE ATT&CK Navigator Layers"
                         })
                     .AddChoiceGroup("MITRE Atomic Test",new[]
                     {
-                        "10. Download MITRE Atomic Test Index File",
+                        "10. Clone MITRE Atomic Red Team Repository",
                         "11. Create MITRE Atomic Test Excel File",
                     })
                     .AddChoiceGroup("Tools",new[]
@@ -58,7 +59,7 @@ class Program
                     MitigationTool.CreateMitreNavigatorLayers();
                     break;
                 case "10":
-                    await AtomicTestTool.DownloadMitreAtomicTestIndexFile();
+                    AtomicTestTool.CloneAtomicTestRepo();
                     break;
                 case "11":
                     AtomicTestTool.CreateMitreAtomicTestFile();
@@ -104,8 +105,24 @@ class Program
         {
             Directory.CreateDirectory(appDataPath);
         }
-
+        
+        var payloadsPath = Path.Combine(appDataPath, "payloads");
+        
+        if (!Directory.Exists(payloadsPath))
+        {
+            Directory.CreateDirectory(payloadsPath);
+        }
+        
+        var atomicTestsPath = Path.Combine(appDataPath, "atomic-tests");
+        
+        if (!Directory.Exists(atomicTestsPath))
+        {
+            Directory.CreateDirectory(atomicTestsPath);
+        }
+        
         AppDataPath = appDataPath;
+        PayloadsPath = payloadsPath;
+        AtomicsPath = atomicTestsPath;
     }
 }
 
@@ -113,10 +130,17 @@ public static class HttpClientUtils
 {
     public static async Task DownloadFileTaskAsync(this HttpClient client, string uri, string filePath)
     {
-        using (var stream = await client.GetStreamAsync(uri))
-        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        try
         {
-            await stream.CopyToAsync(fileStream);
+            using (var stream = await client.GetStreamAsync(uri))
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await stream.CopyToAsync(fileStream);
+            }
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine(e);
         }
     }
 }
