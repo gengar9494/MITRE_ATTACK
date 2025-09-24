@@ -30,33 +30,21 @@ public class MitigationTool
         var stixFile = SelectJsonFile("Select STIX JSON File");
         var excelFileName = $"MITRE Mitigations {DateTime.Now:yyyyMMdd-HHmmss}.xlsx";
         var excelFile = new FileInfo(Path.Combine(Program.AppDataPath, excelFileName));
-        var updateTypes = AnsiConsole.Prompt(
-            new TextPrompt<bool>("Update MITRE Mitigation Types?")
-                .AddChoice(true)
-                .AddChoice(false)
-                .DefaultValue(false)
-                .WithConverter(choice => choice ? "y" : "n"));
         
         ReadStixFile(stixFile);
-        CreateMitreMitigationFile(excelFile, updateTypes);
+        CreateMitreMitigationFile(excelFile);
     }
     
     public void UpdateMitreMitigationFile()
     {
         var oldExcelFile = SelectExcelFile("Select Mitigation Excel File");
         var stixFile = SelectJsonFile("Select STIX JSON File");
-        var updateTypes = AnsiConsole.Prompt(
-            new TextPrompt<bool>("Update MITRE Mitigation Types?")
-                .AddChoice(true)
-                .AddChoice(false)
-                .DefaultValue(false)
-                .WithConverter(choice => choice ? "y" : "n"));
-        var newExcelFileName = string.Format("MITRE Mitigations {0:yyyyMMdd-HHmmss}.xlsx", DateTime.Now);
+        var newExcelFileName = $"MITRE Mitigations {DateTime.Now:yyyyMMdd-HHmmss}.xlsx";
         var newExcelFile = new FileInfo(Path.Combine(Program.AppDataPath, newExcelFileName));
         
         ReadStixFile(stixFile);
         ReadMitigations(oldExcelFile, true);
-        CreateMitreMitigationFile(newExcelFile, updateTypes);
+        CreateMitreMitigationFile(newExcelFile);
     }
     
     public async Task DownloadAllMitreFiles()
@@ -249,12 +237,16 @@ public class MitigationTool
                 relationship.MitigationId = ws.Cells[rowIndex + rowOffset, columns["Mitigation ID"].ColIndex].GetValue<string>();
                 relationship.AttackPatternExternalId = ws.Cells[rowIndex + rowOffset, columns["Technique STIX ID"].ColIndex].GetValue<string>();
                 
-                foreach (var systemCol in columns.Values.Where(x => x.System && !x.ColumnName.Contains("Score")))
+                foreach (var systemCol in columns.Values.Where(x => 
+                             x.System && 
+                             !x.ColumnName.Contains("Score") &&
+                             !x.ColumnName.Contains("Responsible")))
                 {
                     var sys = new Sys();
                     sys.Name = systemCol.ColumnName;
                     sys.Mitigation = ws.Cells[rowIndex + rowOffset, systemCol.ColIndex].GetValue<string>();
                     sys.Score = ws.Cells[rowIndex + rowOffset, systemCol.ColIndex + 1].GetValue<double?>();
+                    sys.Responsible = ws.Cells[rowIndex + rowOffset, systemCol.ColIndex + 2].GetValue<string>();
                     
                     relationship.Systems.Add(sys.Name, sys);
                 }
@@ -321,6 +313,7 @@ public class MitigationTool
         
         var p1 = new Platform();
         p1.Name = "Windows";
+        p1.Color = Color.Blue;
         p1.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p1.Name)).ToList();
         p1.Systems.Add("Windows 11");
         p1.Systems.Add("Windows Server 2019");
@@ -330,6 +323,7 @@ public class MitigationTool
         
         var p2 = new Platform();
         p2.Name = "Linux";
+        p2.Color = Color.Red;
         p2.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p2.Name)).ToList();
         p2.Systems.Add("RHEL 8");
         p2.Systems.Add("RHEL 9");
@@ -338,6 +332,7 @@ public class MitigationTool
         
         var p3 = new Platform();
         p3.Name = "Network Devices";
+        p3.Color = Color.Green;
         p3.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p3.Name)).ToList();
         p3.Systems.Add("Netzwerk FITS");
         p3.Systems.Add("Netzwerk CC");
@@ -348,6 +343,7 @@ public class MitigationTool
         
         var p4 = new Platform();
         p4.Name = "Containers";
+        p4.Color = Color.Orange;
         p4.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p4.Name)).ToList();
         p4.Systems.Add("Kubernetes Cluster");
 
@@ -355,6 +351,7 @@ public class MitigationTool
         
         var p5 = new Platform();
         p5.Name = "IaaS";
+        p5.Color = Color.Aqua;
         p5.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p5.Name)).ToList();
         p5.Systems.Add("FCPI");
         p5.Systems.Add("Azurblau");
@@ -363,6 +360,7 @@ public class MitigationTool
         
         var p6 = new Platform();
         p6.Name = "Identity Provider";
+        p6.Color = Color.SaddleBrown;
         p6.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p6.Name)).ToList();
         p6.Systems.Add("Entra ID");
         
@@ -370,6 +368,7 @@ public class MitigationTool
         
         var p7 = new Platform();
         p7.Name = "Office Suite";
+        p7.Color = Color.DarkBlue;
         p7.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p7.Name)).ToList();
         p7.Systems.Add("M365");
         
@@ -377,6 +376,7 @@ public class MitigationTool
         
         var p8 = new Platform();
         p8.Name = "SaaS";
+        p8.Color = Color.LightBlue;
         p8.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p8.Name)).ToList();
         p8.Systems.Add("M365");
         
@@ -384,30 +384,32 @@ public class MitigationTool
         
         var p9 = new Platform();
         p9.Name = "PRE";
+        p9.Color = Color.DarkGray;
         p9.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p9.Name)).ToList();
         p9.Systems.Add("PRE");
         
         Platforms.Add(p9);
         
-        // var p10 = new Platform();
-        // p10.Name = "Central";
-        // p10.Relationships = Relationships.Where(x => x.XMitrePlatforms.Count > 1).ToList();
-        // p10.Systems.Add("Central");
-        //
-        // Platforms.Add(p10);
+        var p10 = new Platform();
+        p10.Name = "Central";
+        p10.Color = Color.MediumPurple;
+        p10.Relationships = Relationships.ToList();
+        p10.Systems.Add("Central");
+        
+        Platforms.Add(p10);
     }
     
-    private void CreateMitreMitigationFile(FileInfo excelFile, bool updateTypes)
+    private void CreateMitreMitigationFile(FileInfo excelFile)
     {
         using (var package = new ExcelPackage())
         {
             foreach (var platform in Platforms)
-                CreatePlatform(package, platform, updateTypes);
-
+                CreatePlatform(package, platform);
+            
             var ws = package.Workbook.Worksheets.Add("CONFIG");
             
             ws.Cells[1, 1].Value = "Document Version";
-            ws.Cells[1, 2].Value = "1.1";
+            ws.Cells[1, 2].Value = "1.2";
             
             ws.Cells[2, 1].Value = "STIX Version";
             ws.Cells[2, 2].Value = StixVersion.ToString();
@@ -416,17 +418,32 @@ public class MitigationTool
         }
     }
 
-    private void CreatePlatform(ExcelPackage package, Platform platform, bool updateTypes)
+    private void CreatePlatform(ExcelPackage package, Platform platform)
     {
         GenerateGroupGuids(platform.Relationships);
-
+        
+        var platformCentral = Platforms.Single(x=> x.Name == "Central");
+        var relationshipCentral = platformCentral.OldRelationships;
+        
         var ws = package.Workbook.Worksheets.Add(platform.Name);
         var rowIndex = 1;
         var rowOffset = 1;
         var colIndex = 1;
 
+        ws.TabColor = platform.Color;
+        
         var columns = CreateColumns(platform);
-
+        var columnsCentral = CreateColumns(platformCentral);
+        
+        var colIndexCentralMitigation =
+            columnsCentral["Central"].ColIndex;
+        
+        var colIndexCentralScore =
+            columnsCentral["Central-Score"].ColIndex;
+        
+        var colIndexCentralResponsible =
+            columnsCentral["Central-Responsible"].ColIndex;
+        
         ws.Cells[1, 1, 1, columns.Count].Style.Fill.PatternType = ExcelFillStyle.Solid;
         ws.Cells[1, 1, 1, columns.Count].Style.Fill.BackgroundColor.SetColor(Color.Gray);
         // ws.Cells[1, 1, 1, columns.Count].AutoFilter = true;
@@ -461,7 +478,7 @@ public class MitigationTool
 
         var colAlphaRelationshipStixId = 
             NumberToLetter(columns["Relationship STIX ID"].ColIndex);
-
+        
         foreach (var item in platform.Relationships
                      .OrderBy(x => x.CourseOfActionExternalId)
                      .ThenBy(x => x.AttackPatternExternalId))
@@ -486,18 +503,7 @@ public class MitigationTool
             ws.Cells[rowIndex + rowOffset, colIndex++].Value =
                 ap.ExternalReferences.Single(x => x.SourceName == "mitre-attack").ExternalId;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = item.Description;
-
-
-            if (updateTypes)
-            {
-                ws.Cells[rowIndex + rowOffset, colIndex++].Value = GetMitigationType(item.Description!);
-            }
-            else
-            {
-                ws.Cells[rowIndex + rowOffset, colIndex++].Value = "";
-            }
-
-
+            ws.Cells[rowIndex + rowOffset, colIndex++].Value = "";
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = "YES";
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = DateTime.UtcNow;
             
@@ -517,6 +523,7 @@ public class MitigationTool
             {
                 var colSystem = columns[system].ColIndex;
                 var colSystemScore = colSystem + 1;
+                var colSystemResp = colSystem + 2;
                 
                 if (!item.GroupReference)
                 {
@@ -525,30 +532,64 @@ public class MitigationTool
                     ws.Cells[rowIndex + rowOffset, colSystem].Formula =
                         string.Format("=IF(INDIRECT(ADDRESS(MATCH({0}{1},{2}:{2},0),{3}))=\"\",\"\"," +
                                       "INDIRECT(ADDRESS(MATCH({0}{1},{2}:{2},0),{3})))",
-                            colAlphaGroupRefId,rowIndex + rowOffset, colAlphaRelationshipStixId, colSystem);
+                            colAlphaGroupRefId, rowIndex + rowOffset, colAlphaRelationshipStixId, colSystem);
                     
                     ws.Cells[rowIndex + rowOffset, colSystemScore].Style.Fill.PatternType = ExcelFillStyle.Solid;
                     ws.Cells[rowIndex + rowOffset, colSystemScore].Style.Fill.BackgroundColor.SetColor(Color.Gray);
                     ws.Cells[rowIndex + rowOffset, colSystemScore].Formula =
                         string.Format("=IF(INDIRECT(ADDRESS(MATCH({0}{1},{2}:{2},0),{3}))=\"\",\"\"," +
                                       "INDIRECT(ADDRESS(MATCH({0}{1},{2}:{2},0),{3})))",
-                            colAlphaGroupRefId,rowIndex + rowOffset, colAlphaRelationshipStixId, colSystemScore);
+                            colAlphaGroupRefId, rowIndex + rowOffset, colAlphaRelationshipStixId, colSystemScore);
+                    
+                    ws.Cells[rowIndex + rowOffset, colSystemResp].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                    ws.Cells[rowIndex + rowOffset, colSystemResp].Style.Fill.BackgroundColor.SetColor(Color.Gray);
+                    ws.Cells[rowIndex + rowOffset, colSystemResp].Formula =
+                        string.Format("=IF(INDIRECT(ADDRESS(MATCH({0}{1},{2}:{2},0),{3}))=\"\",\"\"," +
+                                      "INDIRECT(ADDRESS(MATCH({0}{1},{2}:{2},0),{3})))",
+                            colAlphaGroupRefId, rowIndex + rowOffset, colAlphaRelationshipStixId, colSystemResp);
                 }
                 else
                 {
                     if (platform.OldRelationships.Count > 0)
                     {
-                        if (item.Id == null)
-                            throw new ApplicationException("Id can't be null");
-                        
-                        if (platform.OldRelationships.ContainsKey(item.Id))
+                        if (platform.OldRelationships.ContainsKey(item.Id!))
                         {
-                            ws.Cells[rowIndex + rowOffset, colSystem].Value = platform.OldRelationships[item.Id].Systems[system].Mitigation;
-                            ws.Cells[rowIndex + rowOffset, colSystemScore].Value = platform.OldRelationships[item.Id].Systems[system].Score;
+                            ws.Cells[rowIndex + rowOffset, colSystem].Value = platform.OldRelationships[item.Id!].Systems[system].Mitigation;
+                            ws.Cells[rowIndex + rowOffset, colSystemScore].Value = platform.OldRelationships[item.Id!].Systems[system].Score;
+                            ws.Cells[rowIndex + rowOffset, colSystemResp].Value = platform.OldRelationships[item.Id!].Systems[system].Responsible;
                         }
                     }
                 }
 
+                if (platform.Name != "Central")
+                {
+                    if (relationshipCentral.ContainsKey(item.Id!))
+                    {
+                        if (!string.IsNullOrWhiteSpace(relationshipCentral[item.Id!].Systems.First().Value.Mitigation) ||
+                            !string.IsNullOrWhiteSpace(relationshipCentral[item.Id!].Systems.First().Value.Responsible))
+                        {
+                            ws.Cells[rowIndex + rowOffset, colSystem].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[rowIndex + rowOffset, colSystem].Style.Fill.BackgroundColor.SetColor(Color.MediumPurple);
+                            ws.Cells[rowIndex + rowOffset, colSystem].Formula =
+                                string.Format("=IF(VLOOKUP(${0}{1},Central!$B:$X,{2},FALSE)=0,{3},VLOOKUP(${0}{1},Central!$B:$X,{2},FALSE))",
+                                    colAlphaRelationshipStixId, rowIndex + rowOffset, colIndexCentralMitigation - 1, "\"Maintained in Central\"");
+                    
+                            ws.Cells[rowIndex + rowOffset, colSystemScore].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[rowIndex + rowOffset, colSystemScore].Style.Fill.BackgroundColor.SetColor(Color.MediumPurple);
+                            ws.Cells[rowIndex + rowOffset, colSystemScore].Formula =
+                                string.Format("=IF(VLOOKUP(${0}{1},Central!$B:$X,{2},FALSE)=0,{3},VLOOKUP(${0}{1},Central!$B:$X,{2},FALSE))",
+                                    colAlphaRelationshipStixId, rowIndex + rowOffset, colIndexCentralScore - 1, "\"\"");
+                    
+                            ws.Cells[rowIndex + rowOffset, colSystemResp].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[rowIndex + rowOffset, colSystemResp].Style.Fill.BackgroundColor.SetColor(Color.MediumPurple);
+                            ws.Cells[rowIndex + rowOffset, colSystemResp].Formula =
+                                string.Format("=IF(VLOOKUP(${0}{1},Central!$B:$X,{2},FALSE)=0,{3},VLOOKUP(${0}{1},Central!$B:$X,{2},FALSE))",
+                                    colAlphaRelationshipStixId, rowIndex + rowOffset, colIndexCentralResponsible - 1, "\"\"");
+                        }
+                    }
+                    
+                }
+                
             }
             
             rowIndex += 1;
@@ -567,7 +608,7 @@ public class MitigationTool
         columns.Add("Technique STIX ID", new Column() {ColumnName = "Technique STIX ID", ColumnWidth = 55, WrapText = false, Hidden = true,  ColIndex = 6});
         columns.Add("Technique ID", new Column() {ColumnName = "Technique ID", ColumnWidth = 15, WrapText = false, ColIndex = 7});
         columns.Add("Description", new Column() {ColumnName = "Description", ColumnWidth = 50, WrapText = true,  Hidden = false, ColIndex = 8});
-        columns.Add("Type", new Column() {ColumnName = "Type", ColumnWidth = 11, WrapText = false, ColIndex = 9});
+        columns.Add("Type", new Column() {ColumnName = "Type", ColumnWidth = 11, WrapText = false, Hidden = true, ColIndex = 9});
         columns.Add("Latest", new Column() {ColumnName = "Latest", ColumnWidth = 11, WrapText = false, ColIndex = 10});
         columns.Add("Added At", new Column() {ColumnName = "Added At", ColumnWidth = 15, WrapText = false, Hidden = true, NumberFormat = "yyyy-mm-dd", ColIndex = 11});
         columns.Add("Mitigation Created At", new Column() {ColumnName = "Mitigation Created At", ColumnWidth = 15, WrapText = false, Hidden = true, NumberFormat = "yyyy-mm-dd",  ColIndex = 12});
@@ -582,13 +623,22 @@ public class MitigationTool
         columns.Add("Group Reference ID", new Column() {ColumnName = "Group Reference ID", ColumnWidth = 55, WrapText = false, Hidden = true, ColIndex = 21});
         
         var colIndex = columns.Last().Value.ColIndex;
-        
+
         foreach (var system in platform.Systems)
         {
             columns.Add(system, new Column() {ColumnName = system, ColumnWidth = 35, WrapText = true, Hidden = false, System = true, ColIndex = ++colIndex});
             columns.Add(system + "-" + "Score", new Column() {ColumnName = "Score", ColumnWidth = 9, WrapText = false, Hidden = false, System = true,  ColIndex = ++colIndex});
-        }
 
+            if (platform.Name == "Central")
+            {
+                columns.Add(system + "-" + "Responsible", new Column() {ColumnName = "Responsible", ColumnWidth = 12, WrapText = false, Hidden = false, System = true,  ColIndex = ++colIndex});
+            }
+            else
+            {
+                columns.Add(system + "-" + "Responsible", new Column() {ColumnName = "Responsible", ColumnWidth = 12, WrapText = false, Hidden = true, System = true,  ColIndex = ++colIndex});
+            }
+        }
+        
         return columns;
     }
     

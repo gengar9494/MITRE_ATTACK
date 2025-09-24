@@ -26,6 +26,7 @@ class Program
                 new SelectionPrompt<string>()
                     .Title("Select Operation")
                     .PageSize(100)
+                    .EnableSearch()
                     .AddChoiceGroup("MITRE ATT&CK Navigator", new[]
                         {
                             "00. Download last 5 MITRE Enterprise STIX JSONs",
