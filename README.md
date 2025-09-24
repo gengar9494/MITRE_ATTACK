@@ -5,6 +5,8 @@ This application uses [MITRE STIX JSON Files](https://github.com/mitre-attack/at
 - Excel Atomic Test Plans
 - [MITRE ATT&CK® Navigator](https://mitre-attack.github.io/attack-navigator/) Layer Files.
 
+[![.NET](https://github.com/gengar9494/MITRE_ATTACK/actions/workflows/dotnet.yml/badge.svg)](https://github.com/gengar9494/MITRE_ATTACK/actions/workflows/dotnet.yml)
+
 ## ✨ Features
 
 - Download last 5 MITRE Enterprise STIX JSONs
