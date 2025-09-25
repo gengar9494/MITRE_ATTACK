@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"   # runs only when you push a tag like v1.0.0
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+            ext: ""
+          - os: macos-latest
+            rid: osx-arm64
+            ext: ""
+          - os: windows-latest
+            rid: win-x64
+            ext: ".exe"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Publish self-contained build
+        run: dotnet publish MET/MET.csproj \
+               -c Release \
+               -r ${{ matrix.rid }} \
+               --self-contained true \
+               -o publish/${{ matrix.rid }}
+
+      - name: Archive build
+        run: |
+          cd publish
+          zip -r MET-${{ matrix.rid }}.zip ${{ matrix.rid }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MET-${{ matrix.rid }}
+          path: publish/MET-${{ matrix.rid }}.zip
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./artifacts/**/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
