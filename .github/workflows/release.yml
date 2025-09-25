@@ -32,11 +32,12 @@ jobs:
           dotnet-version: "9.0.x"
 
       - name: Publish self-contained build
-        run: dotnet publish MET/MET.csproj \
-               -c Release \
-               -r ${{ matrix.rid }} \
-               --self-contained true \
-               -o publish/${{ matrix.rid }}
+        run: |
+          dotnet publish MET/MET.csproj \
+            -c Release \
+            -r ${{ matrix.rid }} \
+            --self-contained true \
+            -o publish/${{ matrix.rid }}
 
       - name: Archive build
         run: |
