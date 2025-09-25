@@ -7,9 +7,10 @@ on:
 
 jobs:
   build:
-    name: Build ${{ matrix.os }} ${{ matrix.arch }}
+    name: Build ${{ matrix.rid }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -32,23 +33,20 @@ jobs:
           dotnet-version: "9.0.x"
 
       - name: Publish self-contained build
-        run: |
-          dotnet publish MET/MET.csproj \
-            -c Release \
-            -r ${{ matrix.rid }} \
-            --self-contained true \
-            -o publish/${{ matrix.rid }}
+        run: dotnet publish MET/MET.csproj -c Release -r ${{ matrix.rid }} --self-contained true -o publish/${{ matrix.rid }}
 
       - name: Archive build
         run: |
+          VERSION=${GITHUB_REF_NAME}
           cd publish
-          zip -r MET-${{ matrix.rid }}.zip ${{ matrix.rid }}
+          mv ${{ matrix.rid }} MET-${VERSION}-${{ matrix.rid }}
+          zip -r MET-${VERSION}-${{ matrix.rid }}.zip MET-${VERSION}-${{ matrix.rid }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MET-${{ matrix.rid }}
-          path: publish/MET-${{ matrix.rid }}.zip
+          name: MET-${{ github.ref_name }}-${{ matrix.rid }}
+          path: publish/MET-${{ github.ref_name }}-${{ matrix.rid }}.zip
 
   release:
     name: Create GitHub Release
