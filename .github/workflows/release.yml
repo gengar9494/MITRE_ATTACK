@@ -38,8 +38,12 @@ jobs:
       - name: Archive build
         run: |
           cd publish
-          mv ${{ matrix.rid }} MET-${{ github.ref_name }}-${{ matrix.rid }}
-          zip -r MET-${{ github.ref_name }}-${{ matrix.rid }}.zip MET-${{ github.ref_name }}-${{ matrix.rid }}
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            Compress-Archive -Path "${{ matrix.rid }}" -DestinationPath "MET-${{ github.ref_name }}-${{ matrix.rid }}.zip"
+          else
+            zip -r MET-${{ github.ref_name }}-${{ matrix.rid }}.zip ${{ matrix.rid }}
+          fi
+        shell: pwsh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
