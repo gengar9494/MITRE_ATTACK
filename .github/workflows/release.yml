@@ -35,15 +35,20 @@ jobs:
       - name: Publish self-contained build
         run: dotnet publish MET/MET.csproj -c Release -r ${{ matrix.rid }} --self-contained true -o publish/${{ matrix.rid }}
 
-      - name: Archive build
+      - name: Archive build (Linux/macOS)
+        if: runner.os != 'Windows'
         run: |
           cd publish
-          if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            Compress-Archive -Path "${{ matrix.rid }}" -DestinationPath "MET-${{ github.ref_name }}-${{ matrix.rid }}.zip"
-          else
-            zip -r MET-${{ github.ref_name }}-${{ matrix.rid }}.zip ${{ matrix.rid }}
-          fi
+          zip -r MET-${{ github.ref_name }}-${{ matrix.rid }}.zip ${{ matrix.rid }}
+        shell: bash
+
+      - name: Archive build (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cd publish
+          Compress-Archive -Path "${{ matrix.rid }}" -DestinationPath "MET-${{ github.ref_name }}-${{ matrix.rid }}.zip"
         shell: pwsh
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
