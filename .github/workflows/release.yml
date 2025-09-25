@@ -37,10 +37,9 @@ jobs:
 
       - name: Archive build
         run: |
-          VERSION=${GITHUB_REF_NAME}
           cd publish
-          mv ${{ matrix.rid }} MET-${VERSION}-${{ matrix.rid }}
-          zip -r MET-${VERSION}-${{ matrix.rid }}.zip MET-${VERSION}-${{ matrix.rid }}
+          mv ${{ matrix.rid }} MET-${{ github.ref_name }}-${{ matrix.rid }}
+          zip -r MET-${{ github.ref_name }}-${{ matrix.rid }}.zip MET-${{ github.ref_name }}-${{ matrix.rid }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
