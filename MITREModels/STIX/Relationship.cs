@@ -36,20 +36,14 @@ public class Relationship
     public bool XMitreDeprecated { get; set; }
     [JsonPropertyName("x_mitre_attack_spec_version")]
     public string? XMitreAttackSpecVersion { get; set; }
-    
     public string CourseOfActionExternalId { get; set; } = string.Empty;
     public string AttackPatternExternalId { get; set; } = string.Empty;
     public List<string> XMitrePlatforms { get; set; } = new List<string>();
     public Guid GroupGuid { get; set; }
     public bool GroupReference { get; set; }
     public string? GroupReferenceId { get; set; }
-
     public Dictionary<string, Sys> Systems { get; set; } = new Dictionary<string, Sys>();
-    
     public string TechniqueId { get; set; }
-
-
     public string MitigationId { get; set; }
-
     public List<KillChainPhase> KillChainPhases { get; set; } = new List<KillChainPhase>();
 }

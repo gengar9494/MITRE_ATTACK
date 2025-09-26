@@ -210,8 +210,17 @@ public class MitigationTool
     {
         using (var package = new ExcelPackage(excelFile))
         {
-            foreach (var platform in Platforms)
-                ReadPlatform(package, platform, onlyGroupReference);
+            var ws = package.Workbook.Worksheets["CONFIG"];
+
+            if (ws.Cells[1, 2].GetValue<string>() == "1.3")
+            {
+                foreach (var platform in Platforms)
+                    ReadPlatform(package, platform, onlyGroupReference);
+            }
+            else
+            {
+                throw new ApplicationException("Mitigation File must be version 1.3!");
+            }
         }
     }
     
@@ -314,7 +323,12 @@ public class MitigationTool
         var p1 = new Platform();
         p1.Name = "Windows";
         p1.Color = Color.Blue;
-        p1.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p1.Name)).ToList();
+        //p1.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p1.Name)).ToList();
+        p1.Relationships = 
+            JsonSerializer.Deserialize<List<Relationship>>(
+                JsonSerializer.Serialize(
+                    Relationships.Where(x => x.XMitrePlatforms.Contains(p1.Name)).ToList()))!;
+        
         p1.Systems.Add("Windows 11");
         p1.Systems.Add("Windows Server 2019");
         p1.Systems.Add("Windows Server 2022");
@@ -324,7 +338,10 @@ public class MitigationTool
         var p2 = new Platform();
         p2.Name = "Linux";
         p2.Color = Color.Red;
-        p2.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p2.Name)).ToList();
+        p2.Relationships = 
+            JsonSerializer.Deserialize<List<Relationship>>(
+                JsonSerializer.Serialize(
+                    Relationships.Where(x => x.XMitrePlatforms.Contains(p2.Name)).ToList()))!;
         p2.Systems.Add("RHEL 8");
         p2.Systems.Add("RHEL 9");
         
@@ -333,7 +350,10 @@ public class MitigationTool
         var p3 = new Platform();
         p3.Name = "Network Devices";
         p3.Color = Color.Green;
-        p3.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p3.Name)).ToList();
+        p3.Relationships = 
+            JsonSerializer.Deserialize<List<Relationship>>(
+                JsonSerializer.Serialize(
+                    Relationships.Where(x => x.XMitrePlatforms.Contains(p3.Name)).ToList()))!;
         p3.Systems.Add("Netzwerk FITS");
         p3.Systems.Add("Netzwerk CC");
         p3.Systems.Add("Netzwerk Azure");
@@ -344,7 +364,10 @@ public class MitigationTool
         var p4 = new Platform();
         p4.Name = "Containers";
         p4.Color = Color.Orange;
-        p4.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p4.Name)).ToList();
+        p4.Relationships = 
+            JsonSerializer.Deserialize<List<Relationship>>(
+                JsonSerializer.Serialize(
+                    Relationships.Where(x => x.XMitrePlatforms.Contains(p4.Name)).ToList()))!;
         p4.Systems.Add("Kubernetes Cluster");
 
         Platforms.Add(p4);
@@ -352,7 +375,10 @@ public class MitigationTool
         var p5 = new Platform();
         p5.Name = "IaaS";
         p5.Color = Color.Aqua;
-        p5.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p5.Name)).ToList();
+        p5.Relationships = 
+            JsonSerializer.Deserialize<List<Relationship>>(
+                JsonSerializer.Serialize(
+                    Relationships.Where(x => x.XMitrePlatforms.Contains(p5.Name)).ToList()))!;
         p5.Systems.Add("FCPI");
         p5.Systems.Add("Azurblau");
         
@@ -361,7 +387,10 @@ public class MitigationTool
         var p6 = new Platform();
         p6.Name = "Identity Provider";
         p6.Color = Color.SaddleBrown;
-        p6.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p6.Name)).ToList();
+        p6.Relationships = 
+            JsonSerializer.Deserialize<List<Relationship>>(
+                JsonSerializer.Serialize(
+                    Relationships.Where(x => x.XMitrePlatforms.Contains(p6.Name)).ToList()))!;
         p6.Systems.Add("Entra ID");
         
         Platforms.Add(p6);
@@ -369,7 +398,10 @@ public class MitigationTool
         var p7 = new Platform();
         p7.Name = "Office Suite";
         p7.Color = Color.DarkBlue;
-        p7.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p7.Name)).ToList();
+        p7.Relationships = 
+            JsonSerializer.Deserialize<List<Relationship>>(
+                JsonSerializer.Serialize(
+                    Relationships.Where(x => x.XMitrePlatforms.Contains(p7.Name)).ToList()))!;
         p7.Systems.Add("M365");
         
         Platforms.Add(p7);
@@ -377,7 +409,10 @@ public class MitigationTool
         var p8 = new Platform();
         p8.Name = "SaaS";
         p8.Color = Color.LightBlue;
-        p8.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p8.Name)).ToList();
+        p8.Relationships = 
+            JsonSerializer.Deserialize<List<Relationship>>(
+                JsonSerializer.Serialize(
+                    Relationships.Where(x => x.XMitrePlatforms.Contains(p8.Name)).ToList()))!;
         p8.Systems.Add("M365");
         
         Platforms.Add(p8);
@@ -385,7 +420,10 @@ public class MitigationTool
         var p9 = new Platform();
         p9.Name = "PRE";
         p9.Color = Color.DarkGray;
-        p9.Relationships = Relationships.Where(x => x.XMitrePlatforms.Contains(p9.Name)).ToList();
+        p9.Relationships = 
+            JsonSerializer.Deserialize<List<Relationship>>(
+                JsonSerializer.Serialize(
+                    Relationships.Where(x => x.XMitrePlatforms.Contains(p9.Name)).ToList()))!;
         p9.Systems.Add("PRE");
         
         Platforms.Add(p9);
@@ -393,7 +431,10 @@ public class MitigationTool
         var p10 = new Platform();
         p10.Name = "Central";
         p10.Color = Color.MediumPurple;
-        p10.Relationships = Relationships.ToList();
+        p10.Relationships = 
+            JsonSerializer.Deserialize<List<Relationship>>(
+                JsonSerializer.Serialize(
+                    Relationships.ToList()))!;
         p10.Systems.Add("Central");
         
         Platforms.Add(p10);
@@ -409,7 +450,7 @@ public class MitigationTool
             var ws = package.Workbook.Worksheets.Add("CONFIG");
             
             ws.Cells[1, 1].Value = "Document Version";
-            ws.Cells[1, 2].Value = "1.2";
+            ws.Cells[1, 2].Value = "1.3";
             
             ws.Cells[2, 1].Value = "STIX Version";
             ws.Cells[2, 2].Value = StixVersion.ToString();
@@ -489,19 +530,20 @@ public class MitigationTool
                 continue;
 
             var coa = CourseOfActions[item.SourceRef];
+            var mitigationId = coa.ExternalReferences.Single(x => x.SourceName == "mitre-attack").ExternalId;
+            
             var ap = AttackPatterns[item.TargetRef];
-
+            var techniqueId = ap.ExternalReferences.Single(x => x.SourceName == "mitre-attack").ExternalId;
+            
             colIndex = 1;
 
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = rowIndex;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = item.Id;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = coa.Id;
-            ws.Cells[rowIndex + rowOffset, colIndex++].Value =
-                coa.ExternalReferences.Single(x => x.SourceName == "mitre-attack").ExternalId;
+            ws.Cells[rowIndex + rowOffset, colIndex++].Value = mitigationId;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = coa.Name;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = ap.Id;
-            ws.Cells[rowIndex + rowOffset, colIndex++].Value =
-                ap.ExternalReferences.Single(x => x.SourceName == "mitre-attack").ExternalId;
+            ws.Cells[rowIndex + rowOffset, colIndex++].Value = techniqueId;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = item.Description;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = "";
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = "YES";
@@ -518,6 +560,7 @@ public class MitigationTool
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = item.GroupGuid.ToString();
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = item.GroupReference;
             ws.Cells[rowIndex + rowOffset, colIndex++].Value = item.GroupReferenceId;
+            ws.Cells[rowIndex + rowOffset, colIndex++].Value = $"{mitigationId}-{techniqueId}";
 
             foreach (var system in platform.Systems)
             {
@@ -621,7 +664,8 @@ public class MitigationTool
         columns.Add("Group Guid", new Column() {ColumnName = "Group Guid", ColumnWidth = 35, WrapText = false, Hidden = true, ColIndex = 19});
         columns.Add("Group Reference", new Column() {ColumnName = "Group Reference", ColumnWidth = 11, WrapText = false, Hidden = true, ColIndex = 20});
         columns.Add("Group Reference ID", new Column() {ColumnName = "Group Reference ID", ColumnWidth = 55, WrapText = false, Hidden = true, ColIndex = 21});
-        
+        columns.Add("Legacy Key", new Column() {ColumnName = "Legacy Key", ColumnWidth = 55, WrapText = false, Hidden = true, ColIndex = 22});
+
         var colIndex = columns.Last().Value.ColIndex;
 
         foreach (var system in platform.Systems)

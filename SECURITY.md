@@ -5,10 +5,10 @@
 We only provide security fixes and support for versions listed below.  
 Older releases are **end-of-life** and will not receive patches.
 
-| Version range | Supported |
-| --- | :---: |
-| >= 1.1.7 | ✅ |
-| < 1.1.7 | ❌ |
+| Version range  | Supported |
+|:--------------:| :---: |
+|    >= 1.1.7    | ✅ |
+|    < 1.1.7     | ❌ |
 
 > Note: We use [Semantic Versioning](https://semver.org/). When reporting, please include your exact version (e.g., `1.2.3`), how you installed the project, and your runtime/OS details.
 
